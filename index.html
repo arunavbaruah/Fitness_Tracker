@@ -4,102 +4,128 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fitness Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #9be9ff, #b9ffb8, #f9ffca);
-      animation: gradientMove 8s infinite alternate;
-      color: #333;
+    :root {
+      --primary-color: #4caf50;
+      --secondary-color: #00bcd4;
+      --background-color: #f3f4f6;
+      --dark-background: #333;
+      --text-color: #333;
+      --dark-text: #f9f9f9;
     }
 
-    @keyframes gradientMove {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    .dark-mode {
+      --background-color: var(--dark-background);
+      --text-color: var(--dark-text);
+    }
+
+    header {
+      padding: 20px;
+      background: var(--primary-color);
+      color: white;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
     }
 
     .container {
-      max-width: 600px;
-      margin: 30px auto;
+      max-width: 900px;
+      margin: 20px auto;
       padding: 20px;
-      background: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      border-radius: 20px;
-      overflow: hidden;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
 
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 20px;
-      color: #00aaff;
-    }
-
-    form {
+    .form-group {
       display: flex;
-      flex-direction: column;
       gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
     }
 
     input, button, select {
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
+      flex: 1;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
       outline: none;
-      transition: transform 0.2s ease, box-shadow 0.3s ease;
     }
 
     button {
-      background: linear-gradient(90deg, #4facfe, #00f2fe);
+      background: var(--secondary-color);
       color: white;
-      border: none;
-      cursor: pointer;
       font-weight: bold;
-      transition: transform 0.3s ease, background 0.3s ease;
+      cursor: pointer;
+      transition: transform 0.3s, background 0.3s;
     }
 
     button:hover {
-      transform: translateY(-3px);
-      background: linear-gradient(90deg, #0288d1, #00acc1);
+      transform: scale(1.05);
+      background: #0288d1;
     }
 
-    ul {
-      list-style: none;
-      padding: 0;
+    .workout-list {
       margin-top: 20px;
     }
 
-    li {
-      background: #f1faff;
-      padding: 15px;
-      margin: 10px 0;
-      border-radius: 10px;
+    .workout-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: transform 0.2s ease;
+      background: #f3f3f3;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      transition: background 0.3s;
     }
 
-    li:hover {
-      transform: scale(1.02);
+    .workout-item:hover {
+      background: #e7f6f9;
     }
 
-    li button {
-      background: #ff4c4c;
+    .workout-text {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex: 1;
+    }
+
+    .delete-btn {
+      background: #f44336;
       color: white;
       border: none;
-      padding: 5px 12px;
+      padding: 10px;
+      font-size: 1rem;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 14px;
-      transition: background 0.2s ease;
+      transition: transform 0.3s, background 0.3s;
+      width: 80px;
+      text-align: center;
     }
 
-    li button:hover {
-      background: #c70000;
+    .delete-btn:hover {
+      transform: scale(1.05);
+      background: #d32f2f;
     }
 
     .analytics {
@@ -107,61 +133,86 @@
     }
 
     canvas {
-      max-width: 100%;
+  max-width: 100%;
+  height: 300px; /* Adjust this value to control the graph size */
+  margin: 0 auto;
+  display: block;
+}
+
+
+    .dark-mode-toggle {
+      cursor: pointer;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--secondary-color);
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s;
+    }
+
+    .dark-mode-toggle:hover {
+      transform: rotate(180deg);
     }
 
     @media (max-width: 768px) {
-      .container {
-        margin: 20px 10px;
-        padding: 15px;
-      }
-
-      h1 {
+      header h1 {
         font-size: 2rem;
       }
 
-      input, button, select {
-        font-size: 14px;
-        padding: 10px;
+      .form-group {
+        flex-direction: column;
       }
 
-      li {
+      input, button {
+        flex: none;
+        width: 100%;
+      }
+
+      .workout-item {
         flex-direction: column;
-        text-align: left;
+        align-items: flex-start;
         gap: 10px;
+      }
+
+      .delete-btn {
+        align-self: flex-end;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <header>
     <h1>Fitness Tracker</h1>
+  </header>
+  <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+  <div class="container">
     <form id="workout-form">
-      <input type="text" id="exercise" placeholder="Exercise Name" required />
-      <input type="number" id="duration" placeholder="Duration (minutes)" required />
-      <input type="number" id="calories" placeholder="Calories Burned" required />
-      <button type="submit">Add Workout</button>
+      <div class="form-group">
+        <input type="text" id="exercise" placeholder="Exercise Name" required />
+        <input type="number" id="duration" placeholder="Duration (minutes)" required />
+        <input type="number" id="calories" placeholder="Calories Burned" required />
+        <button type="submit">Add Workout</button>
+      </div>
     </form>
-    <div>
-      <select id="filter" onchange="filterWorkouts()">
-        <option value="">Filter by Exercise</option>
-      </select>
-    </div>
-    <ul id="workout-list"></ul>
+    <ul id="workout-list" class="workout-list"></ul>
     <div class="analytics">
-      <h2>Analytics</h2>
-      <canvas id="workoutChart"></canvas>
+      <h2>Workout Analytics</h2>
+      <canvas id="workoutChart" style="max-width: 100%; height: 300px;"></canvas>
     </div>
   </div>
 
   <script>
-    const workoutForm = document.getElementById("workout-form");
-    const workoutList = document.getElementById("workout-list");
-    const workoutChartCtx = document.getElementById("workoutChart").getContext("2d");
-    const filterSelect = document.getElementById("filter");
+    const workoutForm = document.getElementById('workout-form');
+    const workoutList = document.getElementById('workout-list');
+    const workoutChartCtx = document.getElementById('workoutChart').getContext('2d');
+    let isDarkMode = false;
 
-    let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
-
+    let workouts = JSON.parse(localStorage.getItem('workouts')) || [];
     let workoutChart;
 
     function updateChart() {
@@ -171,49 +222,43 @@
       if (workoutChart) workoutChart.destroy();
 
       workoutChart = new Chart(workoutChartCtx, {
-        type: "bar",
+        type: 'pie',
         data: {
           labels,
-          datasets: [
-            {
-              label: "Calories Burned",
-              data,
-              backgroundColor: "#00f2fe",
-            },
-          ],
+          datasets: [{
+            label: 'Calories Burned',
+            data,
+            backgroundColor: ['#4caf50', '#00bcd4', '#ff9800', '#f44336'],
+          }],
         },
       });
     }
 
-    function saveToLocalStorage() {
-      localStorage.setItem("workouts", JSON.stringify(workouts));
-    }
-
     function renderWorkouts() {
-      workoutList.innerHTML = "";
+      workoutList.innerHTML = '';
       workouts.forEach((workout, index) => {
-        const li = document.createElement("li");
+        const li = document.createElement('li');
+        li.className = 'workout-item';
         li.innerHTML = `
-          ${workout.exercise} - ${workout.duration} mins - ${workout.calories} cal
-          <button onclick="deleteWorkout(${index})">Delete</button>
+          <div class="workout-text">
+            ${workout.exercise} - ${workout.duration} mins - ${workout.calories} cal
+          </div>
+          <button class="delete-btn" onclick="deleteWorkout(${index})">Delete</button>
         `;
         workoutList.appendChild(li);
       });
 
       updateChart();
-      saveToLocalStorage();
-      updateFilters();
+      localStorage.setItem('workouts', JSON.stringify(workouts));
     }
 
-    workoutForm.onsubmit = (event) => {
-      event.preventDefault();
-
-      const exercise = document.getElementById("exercise").value;
-      const duration = document.getElementById("duration").value;
-      const calories = document.getElementById("calories").value;
+    workoutForm.onsubmit = (e) => {
+      e.preventDefault();
+      const exercise = document.getElementById('exercise').value;
+      const duration = document.getElementById('duration').value;
+      const calories = document.getElementById('calories').value;
 
       workouts.push({ exercise, duration, calories });
-
       workoutForm.reset();
       renderWorkouts();
     };
@@ -223,35 +268,9 @@
       renderWorkouts();
     }
 
-    function updateFilters() {
-      const exercises = [...new Set(workouts.map(w => w.exercise))];
-      filterSelect.innerHTML = `<option value="">Filter by Exercise</option>`;
-      exercises.forEach(exercise => {
-        const option = document.createElement("option");
-        option.value = exercise;
-        option.textContent = exercise;
-        filterSelect.appendChild(option);
-      });
-    }
-
-    function filterWorkouts() {
-      const selectedExercise = filterSelect.value;
-
-      if (selectedExercise === "") {
-        renderWorkouts();
-        return;
-      }
-
-      const filteredWorkouts = workouts.filter(w => w.exercise === selectedExercise);
-      workoutList.innerHTML = "";
-
-      filteredWorkouts.forEach((workout, index) => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          ${workout.exercise} - ${workout.duration} mins - ${workout.calories} cal
-        `;
-        workoutList.appendChild(li);
-      });
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      isDarkMode = !isDarkMode;
     }
 
     renderWorkouts();
