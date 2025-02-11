@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #9be9ff, #b9ffb8, #f9ffca);
+      animation: gradientMove 8s infinite alternate;
+      color: #333;
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: #00aaff;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    input, button, select {
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      outline: none;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    button {
+      background: linear-gradient(90deg, #4facfe, #00f2fe);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      background: linear-gradient(90deg, #0288d1, #00acc1);
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    li {
+      background: #f1faff;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.2s ease;
+    }
+
+    li:hover {
+      transform: scale(1.02);
+    }
+
+    li button {
+      background: #ff4c4c;
+      color: white;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s ease;
+    }
+
+    li button:hover {
+      background: #c70000;
+    }
+
+    .analytics {
+      margin-top: 30px;
+    }
+
+    canvas {
+      max-width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 20px 10px;
+        padding: 15px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      input, button, select {
+        font-size: 14px;
+        padding: 10px;
+      }
+
+      li {
+        flex-direction: column;
+        text-align: left;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Fitness Tracker</h1>
+    <form id="workout-form">
+      <input type="text" id="exercise" placeholder="Exercise Name" required />
+      <input type="number" id="duration" placeholder="Duration (minutes)" required />
+      <input type="number" id="calories" placeholder="Calories Burned" required />
+      <button type="submit">Add Workout</button>
+    </form>
+    <div>
+      <select id="filter" onchange="filterWorkouts()">
+        <option value="">Filter by Exercise</option>
+      </select>
+    </div>
+    <ul id="workout-list"></ul>
+    <div class="analytics">
+      <h2>Analytics</h2>
+      <canvas id="workoutChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const workoutForm = document.getElementById("workout-form");
+    const workoutList = document.getElementById("workout-list");
+    const workoutChartCtx = document.getElementById("workoutChart").getContext("2d");
+    const filterSelect = document.getElementById("filter");
+
+    let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
+
+    let workoutChart;
+
+    function updateChart() {
+      const labels = workouts.map(w => w.exercise);
+      const data = workouts.map(w => w.calories);
+
+      if (workoutChart) workoutChart.destroy();
+
+      workoutChart = new Chart(workoutChartCtx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Calories Burned",
+              data,
+              backgroundColor: "#00f2fe",
+            },
+          ],
+        },
+      });
+    }
+
+    function saveToLocalStorage() {
+      localStorage.setItem("workouts", JSON.stringify(workouts));
+    }
+
+    function renderWorkouts() {
+      workoutList.innerHTML = "";
+      workouts.forEach((workout, index) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${workout.exercise} - ${workout.duration} mins - ${workout.calories} cal
+          <button onclick="deleteWorkout(${index})">Delete</button>
+        `;
+        workoutList.appendChild(li);
+      });
+
+      updateChart();
+      saveToLocalStorage();
+      updateFilters();
+    }
+
+    workoutForm.onsubmit = (event) => {
+      event.preventDefault();
+
+      const exercise = document.getElementById("exercise").value;
+      const duration = document.getElementById("duration").value;
+      const calories = document.getElementById("calories").value;
+
+      workouts.push({ exercise, duration, calories });
+
+      workoutForm.reset();
+      renderWorkouts();
+    };
+
+    function deleteWorkout(index) {
+      workouts.splice(index, 1);
+      renderWorkouts();
+    }
+
+    function updateFilters() {
+      const exercises = [...new Set(workouts.map(w => w.exercise))];
+      filterSelect.innerHTML = `<option value="">Filter by Exercise</option>`;
+      exercises.forEach(exercise => {
+        const option = document.createElement("option");
+        option.value = exercise;
+        option.textContent = exercise;
+        filterSelect.appendChild(option);
+      });
+    }
+
+    function filterWorkouts() {
+      const selectedExercise = filterSelect.value;
+
+      if (selectedExercise === "") {
+        renderWorkouts();
+        return;
+      }
+
+      const filteredWorkouts = workouts.filter(w => w.exercise === selectedExercise);
+      workoutList.innerHTML = "";
+
+      filteredWorkouts.forEach((workout, index) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${workout.exercise} - ${workout.duration} mins - ${workout.calories} cal
+        `;
+        workoutList.appendChild(li);
+      });
+    }
+
+    renderWorkouts();
+  </script>
+</body>
+</html>
